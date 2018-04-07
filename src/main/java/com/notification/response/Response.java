@@ -13,11 +13,12 @@ import org.springframework.http.ResponseEntity;
 
         public static Response buildSuccessResponse(Object payload) {
             ResponseWrapper responseWrapper = new ResponseWrapper();
-            responseWrapper.setHttpCode(200);
             responseWrapper.setPayload(payload);
             responseWrapper.setStatus("Success");
             return new Response(responseWrapper, HttpStatus.OK);
         }
+
+
     }
 
 

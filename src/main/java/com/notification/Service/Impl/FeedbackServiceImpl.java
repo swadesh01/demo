@@ -5,13 +5,12 @@ import com.notification.Service.SpamContentValidatorService;
 import com.notification.request.FeedbackRequest;
 import com.notification.response.GetFeedbackResponse;
 import com.notification.response.SubmitFeedbackResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
@@ -27,10 +26,22 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         SubmitFeedbackResponse feedbackResponse = new SubmitFeedbackResponse();
 
+        if(!isValidRequest(request,feedbackResponse)){
+            return feedbackResponse;
+        }
+
         if(spamContentValidatorService.isSpamContent(request.getComment())){
             feedbackResponse.setMsg("Invalid content");
         }
-        Map<Integer,String> userfeedBack = new HashMap<Integer,String>();
+
+        Map<Integer,String> userfeedBack = null;
+
+        if(feedbackMap.get(request.getProductId()) !=null){
+            userfeedBack = feedbackMap.get(request.getProductId());
+        }else{
+            userfeedBack =  new HashMap<Integer,String>();
+        }
+       // Map<Integer,String> userfeedBack = new HashMap<Integer,String>();
         userfeedBack.put(request.getUserId(),request.getComment());
         feedbackMap.put(request.getProductId(),userfeedBack);
         return feedbackResponse;
@@ -40,10 +51,23 @@ public class FeedbackServiceImpl implements FeedbackService {
     public GetFeedbackResponse getFeedback(String productId){
 
         GetFeedbackResponse resp= new GetFeedbackResponse();
-        resp.setFeedbackMap(feedbackMap);
+        resp.setFeedbackMap(feedbackMap.get(productId));
         return resp;
 
     }
 
+    Boolean isValidRequest(FeedbackRequest request, SubmitFeedbackResponse feedbackResponse){
+
+        if(StringUtils.isBlank(request.getProductId())){
+            feedbackResponse.setMsg("Invalid productId");
+            return false;
+        }else if(request.getUserId()==null){
+            feedbackResponse.setMsg("Invalid UserId");
+            return false;
+        }
+
+        return true;
+
+    }
 
 }
